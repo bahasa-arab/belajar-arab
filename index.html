@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Yuk Belajar Arab!</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Baloo+2:wght@500;700&display=swap">
+<style>
+:root{--bg:#fff3c4;--surface:#ffffff;--ink:#2b2a4c;--muted:#6a6890;--primary:#5b4de0;--on-primary:#ffffff;--good:#2ec4a6;--bad:#ff6b6b;--dark:#1d1b3a;--shadow:#2b2a4c;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1d1b3a;--surface:#2a2858;--ink:#fff7e0;--muted:#b9b6e6;--primary:#8f84ff;--on-primary:#1d1b3a;--shadow:#0e0d22}}
+:root[data-theme="dark"]{--bg:#1d1b3a;--surface:#2a2858;--ink:#fff7e0;--muted:#b9b6e6;--primary:#8f84ff;--on-primary:#1d1b3a;--shadow:#0e0d22}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Baloo 2",system-ui,sans-serif;font-size:1.05rem;min-height:100vh}
+main{max-width:32rem;margin:0 auto;padding:1rem 1rem 2.5rem}
+h1{font-size:1.9rem;margin:.2rem 0 0;line-height:1.1}
+.sub{margin:.2rem 0 .9rem;color:var(--muted)}
+.modes{display:flex;gap:.5rem;margin-bottom:.8rem}
+.modes button{flex:1;padding:.6rem;border:3px solid var(--ink);border-radius:1rem;background:var(--surface);color:var(--ink);font:inherit;font-weight:700;cursor:pointer}
+.modes button[aria-pressed="true"]{background:var(--primary);color:var(--on-primary)}
+.tabs{display:flex;gap:.45rem;overflow-x:auto;padding:.2rem .1rem .7rem}
+.tabs button{flex:none;padding:.35rem .95rem;border:3px solid transparent;border-radius:999px;color:var(--dark);font:inherit;font-weight:700;cursor:pointer}
+.tabs button[aria-pressed="true"]{border-color:var(--ink);transform:scale(1.06)}
+.info{display:flex;justify-content:space-between;color:var(--muted);margin:.2rem .2rem .5rem}
+.card{width:100%;min-height:17rem;border:3px solid var(--ink);border-radius:1.6rem;background:var(--surface);color:var(--ink);box-shadow:0 7px 0 var(--shadow);padding:1.4rem;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:.4rem;font:inherit;cursor:pointer}
+.card.back{background:#ffe08a;color:var(--dark)}
+.ar{font-family:"Amiri","Noto Naskh Arabic","Geeza Pro",serif;font-size:3.4rem;line-height:1.7;direction:rtl}
+.latin{font-size:1.2rem;font-style:italic}
+.arti{font-size:2rem;font-weight:700;line-height:1.2}
+.hint{font-size:.9rem;color:var(--muted)}
+.card.back .hint{color:#5a4b10}
+.row{display:flex;gap:.6rem;margin-top:1.1rem}
+.btn{flex:1;padding:.75rem;border:3px solid var(--ink);border-radius:1rem;background:var(--surface);color:var(--ink);box-shadow:0 4px 0 var(--shadow);font:inherit;font-weight:700;cursor:pointer}
+.btn.main{background:var(--primary);color:var(--on-primary)}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--shadow)}
+.bar{height:.9rem;border:3px solid var(--ink);border-radius:999px;background:var(--surface);overflow:hidden;margin-bottom:.8rem}
+.bar i{display:block;height:100%;background:var(--good);transition:width .3s}
+.opts{display:grid;gap:.6rem;margin-top:1rem}
+.opt{padding:.8rem 1rem;border:3px solid var(--ink);border-radius:1rem;background:var(--surface);color:var(--ink);box-shadow:0 4px 0 var(--shadow);font:inherit;font-size:1.1rem;font-weight:700;text-align:left;cursor:pointer}
+.opt.good{background:var(--good);color:var(--dark)}
+.opt.bad{background:var(--bad);color:var(--dark)}
+.opt:disabled{cursor:default}
+.msg{min-height:2rem;margin:.8rem 0 0;text-align:center;font-size:1.25rem;font-weight:700}
+.pop{animation:pop .35s}
+@keyframes pop{0%{transform:scale(.8)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
+.result{text-align:center}
+.stars{font-size:3rem;letter-spacing:.2rem;margin:.3rem 0}
+.score{font-size:1.5rem;font-weight:700}
+button:focus-visible{outline:4px solid var(--primary);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <h1>Yuk Belajar Arab! 🦉</h1>
+  <p class="sub">Pilih topik, lalu belajar dengan kartu atau coba kuisnya.</p>
+  <div class="modes" id="modes"></div>
+  <div class="tabs" id="tabs" role="group" aria-label="Pilih topik"></div>
+  <div id="view"></div>
+  <p class="msg" id="note" style="font-size:1rem"></p>
+</main>
+<script>
+var DATA = {
+  "Salam": [
+    ["السَّلَامُ عَلَيْكُمْ","as-salāmu ʿalaikum","Semoga keselamatan atas kalian (salam)",["وَعَلَيْكُمُ السَّلَامُ","wa ʿalaikumus-salām","Dan atas kalian keselamatan"]],
+    ["وَعَلَيْكُمُ السَّلَامُ","wa ʿalaikumus-salām","Dan atas kalian keselamatan (balasan salam)"],
+    ["صَبَاحُ الْخَيْرِ","shabāhul-khair","Selamat pagi",["صَبَاحُ النُّورِ","shabāhun-nūr","Selamat pagi juga"]],
+    ["مَسَاءُ الْخَيْرِ","masā’ul-khair","Selamat sore",["مَسَاءُ النُّورِ","masā’un-nūr","Selamat sore juga"]],
+    ["شُكْرًا","syukran","Terima kasih",["عَفْوًا","ʿafwan","Sama-sama"]],
+    ["عَفْوًا","ʿafwan","Sama-sama / maaf"],
+    ["مَعَ السَّلَامَةِ","maʿas-salāmah","Sampai jumpa"]
+  ],
+  "Ungkapan": [
+    ["بَارَكَ اللهُ فِيكَ","bārakallāhu fīka","Semoga Allah memberkahimu (untuk laki-laki)",["وَفِيكَ بَارَكَ اللهُ","wa fīka bārakallāh","Dan semoga Allah memberkahimu juga"]],
+    ["بَارَكَ اللهُ فِيكِ","bārakallāhu fīki","Semoga Allah memberkahimu (untuk perempuan)",["وَفِيكِ بَارَكَ اللهُ","wa fīki bārakallāh","Dan semoga Allah memberkahimu juga"]],
+    ["جَزَاكَ اللهُ خَيْرًا","jazākallāhu khairan","Semoga Allah membalasmu dengan kebaikan",["وَإِيَّاكَ","wa iyyāk","Dan kepadamu juga"]],
+    ["وَإِيَّاكَ","wa iyyāk","Dan kepadamu juga (balasan jazākallāhu khairan)"],
+    ["بِسْمِ اللهِ","bismillāh","Dengan nama Allah"],
+    ["الْحَمْدُ لِلّٰهِ","alḥamdulillāh","Segala puji bagi Allah"],
+    ["إِنْ شَاءَ اللهُ","in syā’ Allāh","Jika Allah menghendaki"],
+    ["مَا شَاءَ اللهُ","mā syā’ Allāh","Atas kehendak Allah (ungkapan kagum)"],
+    ["سُبْحَانَ اللهِ","subḥānallāh","Maha Suci Allah"],
+    ["اللهُ أَكْبَرُ","Allāhu akbar","Allah Maha Besar"],
+    ["أَسْتَغْفِرُ اللهَ","astaghfirullāh","Aku memohon ampun kepada Allah"],
+    ["أَهْلًا وَسَهْلًا","ahlan wa sahlan","Selamat datang",["أَهْلًا بِكَ","ahlan bik","Salam hangat juga untukmu"]],
+    ["كَيْفَ حَالُكَ؟","kaifa ḥāluka?","Apa kabar? (untuk laki-laki)",["بِخَيْرٍ، الْحَمْدُ لِلّٰهِ","bi-khair, alḥamdulillāh","Baik, alhamdulillah"]],
+    ["بِخَيْرٍ، الْحَمْدُ لِلّٰهِ","bi-khair, alḥamdulillāh","Baik, alhamdulillah"]
+  ],
+  "Percakapan": [
+    ["مَا اسْمُكَ؟","mā ismuka?","Siapa namamu? (untuk laki-laki)",["اِسْمِي أَحْمَدُ","ismī Aḥmad","Namaku Ahmad"]],
+    ["مِنْ أَيْنَ أَنْتَ؟","min aina anta?","Kamu dari mana? (untuk laki-laki)",["أَنَا مِنْ إِنْدُونِيسِيَا","anā min Indūnīsiyā","Saya dari Indonesia"]],
+    ["هَلْ تَتَكَلَّمُ الْعَرَبِيَّةَ؟","hal tatakallamul-ʿarabiyyah?","Apakah kamu bisa berbahasa Arab? (untuk laki-laki)",["نَعَمْ، قَلِيلًا","naʿam, qalīlan","Ya, sedikit"]],
+    ["أَيْنَ الْحَمَّامُ؟","ainal-ḥammām?","Di mana kamar mandi?",["هُنَاكَ","hunāk","Di sana"]],
+    ["هَلْ تُرِيدُ مَاءً؟","hal turīdu mā’an?","Mau minum air? (untuk laki-laki)",["نَعَمْ، شُكْرًا","naʿam, syukran","Ya, terima kasih"]],
+    ["مَا هَذَا؟","mā hādzā?","Apa ini?",["هَذَا كِتَابٌ","hādzā kitāb","Ini buku"]]
+  ],
+  "Angka": [
+    ["وَاحِدٌ","wāḥid","Satu"],
+    ["اثْنَانِ","itsnān","Dua"],
+    ["ثَلَاثَةٌ","tsalātsah","Tiga"],
+    ["أَرْبَعَةٌ","arbaʿah","Empat"],
+    ["خَمْسَةٌ","khamsah","Lima"]
+  ],
+  "Keluarga": [
+    ["أَبٌ","ab","Ayah"],
+    ["أُمٌّ","umm","Ibu"],
+    ["أَخٌ","akh","Saudara laki-laki"],
+    ["أُخْتٌ","ukht","Saudara perempuan"]
+  ],
+  "Benda": [
+    ["مَاءٌ","mā’","Air"],
+    ["خُبْزٌ","khubz","Roti"],
+    ["بَيْتٌ","bait","Rumah"],
+    ["كِتَابٌ","kitāb","Buku"],
+    ["نَعَمْ","naʿam","Ya"],
+    ["لَا","lā","Tidak"]
+  ]
+};
+
+var topics=["Semua"].concat(Object.keys(DATA));
+var COL=["#ffc93c","#38b6ff","#ff9eb5","#2ec4a6","#c3a6ff","#ff9f5a","#b8e986"];
+var mode="kartu",topic="Semua",deck=[],i=0,flipped=false,Q=[],qi=0,score=0,locked=false;
+var view=document.getElementById("view");
+function h(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
+function all(){var a=[];Object.keys(DATA).forEach(function(k){a=a.concat(DATA[k])});return a}
+function pool(){return topic==="Semua"?all():DATA[topic].slice()}
+function shuf(a){a=a.slice();for(var n=a.length-1;n>0;n--){var j=Math.floor(Math.random()*(n+1)),t=a[n];a[n]=a[j];a[j]=t}return a}
+function pick(a){return a[Math.floor(Math.random()*a.length)]}
+function btn(t,c,f){var b=h("button","btn "+(c||""),t);b.onclick=f;return b}
+
+function note(t){document.getElementById("note").textContent=t}
+function speak(t){
+  note("");
+  if(!("speechSynthesis" in window)){note("Perangkat ini belum mendukung suara.");return}
+  var u=new SpeechSynthesisUtterance(t);u.lang="ar-SA";u.rate=.8;
+  var all=speechSynthesis.getVoices(),v=all.filter(function(x){return x.lang&&x.lang.toLowerCase().indexOf("ar")===0});
+  if(v.length){u.voice=v[0]}else if(all.length){note("Suara bahasa Arab belum tersedia di perangkat ini. Coba di perangkat lain.");return}
+  speechSynthesis.cancel();speechSynthesis.speak(u);
+}
+function cards(){
+  view.innerHTML="";var c=deck[i];
+  var info=h("div","info");info.appendChild(h("span",null,"Kartu "+(i+1)+" dari "+deck.length));view.appendChild(info);
+  var card=h("button","card"+(flipped?" back":""));
+  if(flipped){card.appendChild(h("div","arti",c[2]));card.appendChild(h("div","latin",c[1]));
+    if(c[3]){card.appendChild(h("div","hint","Jawabannya:"));var ra=h("div","ar",c[3][0]);ra.style.fontSize="2.4rem";card.appendChild(ra);card.appendChild(h("div","latin",c[3][1]+" — "+c[3][2]))}
+    card.appendChild(h("div","hint","Ketuk untuk kembali"))}
+  else{card.appendChild(h("div","ar",c[0]));card.appendChild(h("div","hint","Ketuk untuk melihat arti"))}
+  card.onclick=function(){flipped=!flipped;note("");cards()};view.appendChild(card);
+  var au=h("div","row");au.appendChild(btn("🔊 Dengar","",function(){speak(c[0])}));
+  if(c[3])au.appendChild(btn("🔊 Dengar jawaban","",function(){speak(c[3][0])}));
+  view.appendChild(au);
+  var r=h("div","row");
+  r.appendChild(btn("◀ Mundur","",function(){go(-1)}));
+  r.appendChild(btn("🔀 Acak","",function(){deck=shuf(deck);i=0;flipped=false;cards()}));
+  r.appendChild(btn("Maju ▶","main",function(){go(1)}));
+  view.appendChild(r);
+}
+function go(d){i=(i+d+deck.length)%deck.length;flipped=false;cards()}
+
+function startQuiz(){Q=shuf(pool()).slice(0,10);qi=0;score=0;quiz()}
+function quiz(){
+  view.innerHTML="";
+  if(qi>=Q.length){return result()}
+  locked=false;var c=Q[qi];
+  var bar=h("div","bar"),fill=document.createElement("i");fill.style.width=(qi/Q.length*100)+"%";bar.appendChild(fill);view.appendChild(bar);
+  var info=h("div","info");info.appendChild(h("span",null,"Soal "+(qi+1)+" dari "+Q.length));info.appendChild(h("span",null,"⭐ "+score));view.appendChild(info);
+  var card=h("div","card");card.style.minHeight="9rem";card.style.cursor="default";
+  card.appendChild(h("div","ar",c[0]));card.appendChild(h("div","hint","Apa artinya?"));view.appendChild(card);
+  var sb=btn("🔊 Dengar","",function(){speak(c[0])});sb.style.width="100%";sb.style.flex="none";sb.style.marginTop=".8rem";view.appendChild(sb);
+  var wr=shuf(all().filter(function(w){return w[2]!==c[2]})).slice(0,3);
+  var opts=h("div","opts");
+  shuf([c].concat(wr)).forEach(function(w){
+    var o=h("button","opt",w[2]);
+    o.onclick=function(){answer(o,w===c,opts,c)};opts.appendChild(o);
+  });
+  view.appendChild(opts);
+  var m=h("p","msg");m.id="msg";view.appendChild(m);
+  var nx=btn(qi+1===Q.length?"Lihat hasil 🎁":"Lanjut ▶","main",function(){qi++;quiz()});
+  nx.id="next";nx.style.display="none";nx.style.width="100%";view.appendChild(nx);
+}
+function answer(o,ok,opts,c){
+  if(locked)return;locked=true;
+  Array.prototype.forEach.call(opts.children,function(b){b.disabled=true;if(b.textContent===c[2])b.classList.add("good")});
+  var m=document.getElementById("msg");m.className="msg pop";
+  if(ok){score++;m.textContent=pick(["Hebat! 🎉","Betul sekali! ⭐","Pintar! 🌟","Mantap! 👏"])}
+  else{o.classList.add("bad");m.textContent=pick(["Belum tepat, semangat! 💪","Tidak apa-apa, coba lagi nanti! 🌈"])}
+  document.getElementById("next").style.display="block";
+}
+function result(){
+  var p=score/Q.length,s=p>=.9?3:p>=.6?2:1;
+  var box=h("div","result");
+  box.appendChild(h("div","stars pop","⭐".repeat(s)));
+  box.appendChild(h("div","score","Skor: "+score+" dari "+Q.length));
+  box.appendChild(h("p","msg",p>=.9?"Luar biasa! Kamu jago bahasa Arab! 🏆":p>=.6?"Bagus sekali! Sedikit lagi sempurna! 🌟":"Semangat! Belajar lagi, pasti bisa! 💪"));
+  var r=h("div","row");
+  r.appendChild(btn("📖 Lihat kartu","",function(){setMode("kartu")}));
+  r.appendChild(btn("🔁 Main lagi","main",startQuiz));
+  box.appendChild(r);view.appendChild(box);
+}
+
+function setMode(m){mode=m;drawModes();run()}
+function run(){
+  if(mode==="kartu"){deck=pool();i=0;flipped=false;cards()}else{startQuiz()}
+}
+function drawModes(){
+  var el=document.getElementById("modes");el.innerHTML="";
+  [["kartu","📖 Kartu"],["kuis","🎯 Kuis"]].forEach(function(x){
+    var b=h("button",null,x[1]);b.setAttribute("aria-pressed",mode===x[0]);
+    b.onclick=function(){setMode(x[0])};el.appendChild(b);
+  });
+}
+var tabsEl=document.getElementById("tabs");
+topics.forEach(function(t,n){
+  var b=h("button",null,t);b.style.background=COL[n%COL.length];b.setAttribute("aria-pressed",t===topic);
+  b.onclick=function(){topic=t;Array.prototype.forEach.call(tabsEl.children,function(x){x.setAttribute("aria-pressed",x.textContent===t)});run()};
+  tabsEl.appendChild(b);
+});
+drawModes();run();
+</script>
+</body>
+</html>
